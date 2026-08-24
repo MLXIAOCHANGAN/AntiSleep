@@ -1,0 +1,10 @@
+# Gradle
+.gradle/
+build/
+# 本地 SDK 路径
+local.properties
+# IDE
+.idea/
+*.iml
+# 忽略 app 构建产物（保留根目录发布 APK）
+app/build/

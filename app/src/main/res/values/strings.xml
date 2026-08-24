@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">防息屏助手</string>
+    <string name="accessibility_service_label">防息屏自动点击</string>
+    <string name="accessibility_service_description">定时模拟点击屏幕，防止手机自动息屏。仅在你开启并设置后才会工作。</string>
+
+    <string name="status_not_running">未运行</string>
+    <string name="status_running">运行中 · 每 %1$d 秒点击一次</string>
+    <string name="status_no_accessibility">已启动但无障碍服务未开启，点击无法生效</string>
+
+    <string name="btn_start">启动防息屏</string>
+    <string name="btn_stop">停止</string>
+    <string name="btn_open_accessibility">去开启无障碍服务</string>
+    <string name="btn_open_system_settings">修改系统息屏时间</string>
+    <string name="btn_save">保存设置</string>
+
+    <string name="label_interval">点击间隔（秒）</string>
+    <string name="label_mode">点击位置</string>
+    <string name="mode_center">屏幕中央</string>
+    <string name="mode_random">中央附近随机（推荐）</string>
+    <string name="mode_custom">自定义坐标（百分比）</string>
+    <string name="label_x">X（水平，0-100）</string>
+    <string name="label_y">Y（垂直，0-100）</string>
+    <string name="label_vivo_guide">VIVO 手机防杀后台设置（必看）</string>
+    <string name="vivo_guide_text">1. 开启无障碍：设置 → 其他设置 → 无障碍 → 已安装的服务 → 防息屏自动点击
+2. 通知权限：设置 → 通知与状态栏 → 应用通知管理 → 防息屏助手 → 允许通知（避免被杀）
+3. 电池白名单：i管家 → 应用管理 → 后台耗电管理 → 防息屏助手 → 允许后台高耗电
+4. 自启动：i管家 → 应用管理 → 自启动 → 允许防息屏助手自启动
+5. 若仍被杀：最近任务界面将应用卡片下拉锁定，或在 设置→电池→后台耗电管理 中设为"不允许"自动优化
+6. 屏幕常亮补充：可同时修改系统息屏时间（点下方按钮，允许"修改系统设置"后设置为 30 分钟）</string>
+        <string name="btn_test_click">立即测试点击一次</string>
+    <string name="btn_extend_timeout">一键延长息屏时间(30分钟)</string>
+    <string name="test_click_ok">已发送一次点击手势，观察屏幕是否有反应</string>
+    <string name="test_click_no_accessibility">请先开启无障碍服务</string>
+    <string name="timeout_extended">已将系统息屏时间设置为 30 分钟</string>
+    <string name="timeout_no_permission">请先授予"修改系统设置"权限</string>
+        <string name="label_duration">定时自动停止（分钟，0=不限时）</string>
+    <string name="label_overlay">悬浮窗实时状态</string>
+    <string name="overlay_permission_btn">授权悬浮窗权限</string>
+    <string name="overlay_permission_ok">悬浮窗权限正常</string>
+    <string name="duration_saved">定时 %1$d 分钟，到点自动停止并息屏</string>
+
+</resources>

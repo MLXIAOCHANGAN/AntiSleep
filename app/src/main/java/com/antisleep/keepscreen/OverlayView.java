@@ -18,11 +18,10 @@ import android.widget.TextView;
  * 悬浮窗：实时显示运行状态（剩余时间 / 点击次数）。
  * 可拖动，点击打开主界面。由 KeepAwakeService 创建与销毁。
  *
- * VIVO 兼容修复（v1.3）：
- * 1. 不再用 Settings.canDrawOverlays() 预检拦截 —— VIVO 存在"系统级 + i管家级"
- *    双层悬浮窗权限，系统 API 可能误报 false，导致悬浮窗永远不显示。
- *    改为直接尝试 addView，用异常兜底，最大限度兼容各机型。
- * 2. 移除 FLAG_LAYOUT_NO_LIMITS —— 部分 Android 10 设备上会导致布局异常。
+ * v1.4：悬浮窗内置控制按钮
+ *  - ✕ 隐藏：仅隐藏悬浮窗，防息屏继续后台运行
+ *  - ⏻ 停止：一键停止防息屏（停止点击 + 关闭前台服务，手机可自然息屏）
+ * 按钮区域优先响应，其余区域仍支持拖动与点击打开主界面。
  */
 public class OverlayView {
     private static OverlayView instance;
@@ -112,6 +111,35 @@ public class OverlayView {
         root.addView(tvDetail, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
+        // ---- 控制按钮行：✕ 隐藏 / ⏻ 停止 ----
+        LinearLayout btnRow = new LinearLayout(ctx);
+        btnRow.setOrientation(LinearLayout.HORIZONTAL);
+        btnRow.setGravity(Gravity.CENTER);
+        btnRow.setPadding(0, dp(6), 0, 0);
+
+        // ✕ 隐藏：仅隐藏悬浮窗（防息屏继续）
+        TextView btnHide = makeButton("✕ 隐藏", 0xFF9AA0A6);
+        btnHide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OverlayView.hide();
+            }
+        });
+
+        // ⏻ 停止：一键停止防息屏（悬浮窗由 onDestroy 移除）
+        TextView btnStop = makeButton("⏻ 停止", 0xFFF28B82);
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                KeepAwakeService.stop(OverlayView.this.ctx);
+            }
+        });
+
+        btnRow.addView(btnHide, new LinearLayout.LayoutParams(0, dp(30), 1f));
+        btnRow.addView(btnStop, new LinearLayout.LayoutParams(0, dp(30), 1f));
+        root.addView(btnRow, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
         // VIVO 兼容：不使用 FLAG_LAYOUT_NO_LIMITS（部分 Android 10 设备布局异常）
         lp = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -125,10 +153,14 @@ public class OverlayView {
         lp.y = dp(120);
         lp.alpha = 0.95f;
 
-        // 拖动 + 点击打开主界面
+        // 拖动 + 点击打开主界面（按钮区域优先，不参与拖动/打开）
         root.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent e) {
+                // 若触摸点落在按钮行区域内，不消费事件，交给按钮处理
+                if (e.getY() >= v.getHeight() - dp(36)) {
+                    return false;
+                }
                 switch (e.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         downX = (int) e.getRawX();
@@ -162,6 +194,20 @@ public class OverlayView {
 
         view = root;
         wm.addView(view, lp);
+    }
+
+    /** 创建悬浮窗按钮 */
+    private TextView makeButton(String text, int color) {
+        TextView b = new TextView(ctx);
+        b.setText(text);
+        b.setTextSize(11);
+        b.setGravity(Gravity.CENTER);
+        b.setTextColor(color);
+        b.setTypeface(null, Typeface.BOLD);
+        b.setBackgroundColor(0x33FFFFFF); // 半透明白底
+        b.setPadding(0, 0, 0, 0);
+        b.setClickable(true);
+        return b;
     }
 
     private void remove() {

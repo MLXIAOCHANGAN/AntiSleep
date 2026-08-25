@@ -40,4 +40,8 @@
     <string name="overlay_permission_ok">悬浮窗权限正常</string>
     <string name="duration_saved">定时 %1$d 分钟，到点自动停止并息屏</string>
 
+        <string name="overlay_vivo_tip">VIVO 手机悬浮窗需在"i管家 → 权限管理 → 悬浮窗"中单独开启，系统设置授权后仍不显示请检查此处</string>
+    <string name="btn_retry_overlay">重新显示悬浮窗</string>
+    <string name="overlay_shown">悬浮窗已显示</string>
+    <string name="overlay_retry_fail">悬浮窗显示失败，请检查悬浮窗权限（VIVO 需在 i管家授权）</string>
 </resources>

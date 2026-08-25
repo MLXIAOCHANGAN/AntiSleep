@@ -88,6 +88,14 @@ public class KeepAwakeService extends Service {
         // AutoClickService 的循环会检查 Prefs.isEnabled，false 时不再点击
     }
 
+
+    /** 立即重新尝试显示悬浮窗（主界面"重试"时调用） */
+    public static void retryOverlay(Context ctx) {
+        if (Prefs.isOverlayEnabled(ctx) && Prefs.isEnabled(ctx)) {
+            OverlayView.show(ctx);
+        }
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -103,11 +111,27 @@ public class KeepAwakeService extends Service {
         }
         // 定时 tick：检查超时 + 刷新悬浮窗
         handler.postDelayed(ticker, 1000);
-        // 悬浮窗：需权限且开关开启
+        // 悬浮窗：延迟创建（等待系统窗口就绪）+ 失败自动重试（VIVO 兼容）
         if (Prefs.isOverlayEnabled(this)) {
-            boolean ok = OverlayView.show(this);
-            if (ok) updateOverlay();
+            scheduleShowOverlay(0);
         }
+    }
+
+    /** 延迟创建悬浮窗，失败按 1s/2s/4s 指数退避重试，最多 5 次 */
+    private void scheduleShowOverlay(int attempt) {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!Prefs.isEnabled(KeepAwakeService.this)) return; // 已停止
+                int result = OverlayView.show(KeepAwakeService.this);
+                if (result == OverlayView.RESULT_OK) {
+                    updateOverlay();
+                } else if (attempt < 5) {
+                    scheduleShowOverlay(attempt + 1);
+                }
+                // 失败且重试耗尽：保持静默，用户可在主界面重新触发
+            }
+        }, attempt == 0 ? 800 : (1000L << Math.min(attempt - 1, 3)));
     }
 
     @Override

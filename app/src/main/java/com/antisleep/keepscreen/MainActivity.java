@@ -83,13 +83,18 @@ public class MainActivity extends Activity {
                             ? getString(R.string.duration_saved, dur)
                             : "已启动，请确认无障碍服务已开启";
                     Toast.makeText(MainActivity.this, tip, Toast.LENGTH_LONG).show();
-                    // 悬浮窗未授权时提醒
-                    if (switchOverlay.isChecked()
-                            && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                            && !Settings.canDrawOverlays(MainActivity.this)) {
-                        Toast.makeText(MainActivity.this, R.string.overlay_permission_btn, Toast.LENGTH_LONG).show();
-                        startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:" + getPackageName())));
+                    // 悬浮窗未授权时提醒（VIVO 需 i管家 + 系统双层授权）
+                    if (switchOverlay.isChecked()) {
+                        boolean sysPerm = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+                                || Settings.canDrawOverlays(MainActivity.this);
+                        if (!sysPerm) {
+                            Toast.makeText(MainActivity.this, R.string.overlay_permission_btn, Toast.LENGTH_LONG).show();
+                            startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:" + getPackageName())));
+                        } else {
+                            // 系统权限已给，但 VIVO 可能还有 i管家层——提示用户
+                            Toast.makeText(MainActivity.this, R.string.overlay_vivo_tip, Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
                 refreshStatus();
@@ -129,6 +134,33 @@ public class MainActivity extends Activity {
                     Settings.System.putInt(getContentResolver(),
                             Settings.System.SCREEN_OFF_TIMEOUT, 30 * 60 * 1000);
                     Toast.makeText(MainActivity.this, R.string.timeout_extended, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        Button btnRetryOverlay = findViewById(R.id.btnRetryOverlay);
+        btnRetryOverlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!Prefs.isEnabled(MainActivity.this)) {
+                    Toast.makeText(MainActivity.this, "请先启动防息屏", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (!Prefs.isOverlayEnabled(MainActivity.this)) {
+                    Toast.makeText(MainActivity.this, "请先打开悬浮窗开关", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int r = OverlayView.show(MainActivity.this);
+                if (r == OverlayView.RESULT_OK) {
+                    Toast.makeText(MainActivity.this, R.string.overlay_shown, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.overlay_retry_fail, Toast.LENGTH_LONG).show();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                            && !Settings.canDrawOverlays(MainActivity.this)) {
+                        startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:" + getPackageName())));
+                    }
+                    Toast.makeText(MainActivity.this, R.string.overlay_vivo_tip, Toast.LENGTH_LONG).show();
                 }
             }
         });
